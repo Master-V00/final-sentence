@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>لعبة 3D تعليمية — اكتب الترجمة</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="container"></div>
+
+<!-- UI -->
+<div id="ui" dir="rtl" aria-live="polite">
+  <h1>أنت مخطوف — اكتب ترجمة الكلمات بالإنجليزية</h1>
+  <div>المستوى: <span id="levelLabel">—</span></div>
+  <div style="margin-top:8px;">
+    <div id="word">اضغط على زر البدء لاختيار</div>
+  </div>
+  <div style="margin-top:8px;">الوقت المتبقي: <span id="timer">0</span>s</div>
+  <input id="answer" placeholder="اكتب الترجمة ثم اضغط Enter" disabled autocomplete="off" />
+  <div style="margin-top:8px;">
+    <button id="startBtn" class="btn primary">ابدأ اللعبة</button>
+    <button id="skipCinematic" class="btn" style="margin-left:8px;">تخطي السيناريو</button>
+  </div>
+</div>
+
+<!-- Intro / difficulty modal -->
+<div id="intro" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2>هتلعب على انهي صعوبه؟</h2>
+    <p id="introText">شخص مقنّع ماسك مسدس: "اختار مستوى كونك سريع!"</p>
+    <div class="btn-row">
+      <button class="btn" data-level="A1">A1</button>
+      <button class="btn" data-level="A2">A2</button>
+      <button class="btn" data-level="B1">B1</button>
+      <button class="btn" data-level="B2">B2</button>
+    </div>
+    <div style="margin-top:12px; font-size:13px; color:#ddd;">انقر على مستوى لبدء المشهد السينمائي</div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div id="summaryPanel" role="status">
+  <h3>النتيجة</h3>
+  <div id="correctList"><strong>الكلمات الصحيحة:</strong><br></div>
+  <div style="margin-top:8px;"><strong>الكلمات الخاطئة:</strong><br><div id="wrongList"></div></div>
+  <div style="margin-top:10px;"><button id="restartBtn" class="btn primary">إعادة اللعب</button></div>
+</div>
+
+<!-- Name tag on table -->
+<div id="nameTag" class="nameTag" style="display:none;">المُلاعب</div>
+
+<!-- Three.js and examples (from CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.164.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.164.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.164.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<!-- Game scripts -->
+<script src="js/utils.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/words.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
