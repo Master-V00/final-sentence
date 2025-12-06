@@ -5,8 +5,9 @@ import { fetchWordBatch } from './services/geminiService';
 import { Atmosphere } from './components/Atmosphere';
 import { unitsData } from './data/units';
 import { firstTermData } from './data/firstTerm';
-import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound } from './services/soundService';
+import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound, initMusic } from './services/soundService';
 import { ContactFab } from './components/ContactFab';
+import { MusicToggle } from './components/MusicToggle';
 
 // --- Sub-Components --- //
 
@@ -23,6 +24,9 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
   ];
 
   useEffect(() => {
+    // Attempt to start music immediately
+    initMusic();
+
     // Fade in from black
     const t1 = setTimeout(() => setOpacity(1), 1000);
     
@@ -106,7 +110,7 @@ const DifficultyMenu: React.FC<{
                 </button>
               ))}
 
-              {/* Expand Arrow - UPDATED */}
+              {/* Expand Arrow */}
               <button 
                 onClick={() => setExpanded(!expanded)}
                 className="flex flex-col items-center justify-center py-4 mt-2 text-green-400 hover:text-green-300 transition-colors opacity-80 hover:opacity-100"
@@ -209,12 +213,10 @@ const GameSession: React.FC<{
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      // If we have custom words (1st Grade mode), use them directly
       if (customWords && customWords.length > 0) {
         setWords(customWords);
         setLoading(false);
       } else {
-        // Otherwise fetch from Gemini
         const newWords = await fetchWordBatch(difficulty, 5);
         if (mounted) {
           setWords(newWords);
@@ -236,17 +238,15 @@ const GameSession: React.FC<{
       setTimeLeft(prev => {
         const newValue = prev - step;
         
-        // Timer ticking sound effect logic
         const prevSec = Math.ceil((prev / 100) * maxTimeSec);
         const newSec = Math.ceil((newValue / 100) * maxTimeSec);
         
-        // Play tick when crossing integer second boundaries in the last 3 seconds
         if (newSec < prevSec && newSec <= 3 && newSec > 0) {
           playTickSound();
         }
 
         if (newValue <= 0) {
-          handleSubmit(true); // Force submit on timeout
+          handleSubmit(true); 
           return 0;
         }
         return newValue;
@@ -265,14 +265,12 @@ const GameSession: React.FC<{
     const currentWord = words[currentIndex];
     const isCorrect = !timeout && input.trim().toLowerCase() === currentWord.english.toLowerCase();
     
-    // Play Sound
     if (isCorrect) {
       playCorrectSound();
     } else {
       playIncorrectSound();
     }
 
-    // Record stats
     const newRecord: PlayerRecord = {
       challenge: currentWord,
       playerAnswer: timeout ? '[NO RESPONSE]' : input,
@@ -284,27 +282,20 @@ const GameSession: React.FC<{
     setRecords(updatedRecords);
 
     if (!isCorrect) {
-      // Game Over immediately on wrong answer or timeout
       onGameOver(updatedRecords);
     } else {
-      // Increase stress
       setStressLevel(prev => Math.min(prev + 0.1, 1));
-      
-      // Next word logic
       setInput('');
       setTimeLeft(100);
       
-      // Check if we need more words or loop
       if (currentIndex + 1 >= words.length) {
         setLoading(true);
         if (customWords) {
-          // If custom words, just Reshuffle and Loop to keep game going (Survival style)
           const reshuffled = [...words].sort(() => Math.random() - 0.5);
           setWords(prev => [...prev, ...reshuffled]);
           setLoading(false);
           setCurrentIndex(prev => prev + 1);
         } else {
-          // If API, fetch more
           const moreWords = await fetchWordBatch(difficulty, 5);
           setWords(prev => [...prev, ...moreWords]);
           setLoading(false);
@@ -326,7 +317,6 @@ const GameSession: React.FC<{
     <div className="relative w-full max-w-2xl mx-auto mt-12 md:mt-24 p-6">
       <Atmosphere intensity={stressLevel} />
       
-      {/* Word Display */}
       <div className="bg-gray-900/80 border border-gray-700 p-12 rounded shadow-2xl text-center relative overflow-hidden">
         <div className="absolute top-2 right-4 text-xs text-gray-500 font-mono">
           CASE #{1000 + currentIndex}
@@ -336,7 +326,6 @@ const GameSession: React.FC<{
           {currentWord?.arabic}
         </h1>
 
-        {/* Input Area */}
         <input
           autoFocus
           type="text"
@@ -349,7 +338,6 @@ const GameSession: React.FC<{
         />
       </div>
 
-      {/* Timer Bar */}
       <div className="mt-8 h-2 bg-gray-800 rounded-full overflow-hidden relative">
         <div 
           className={`h-full transition-all duration-100 ease-linear ${timeLeft < 30 ? 'bg-red-600' : 'bg-white'}`}
@@ -357,7 +345,6 @@ const GameSession: React.FC<{
         />
       </div>
 
-      {/* Masked Figure Presence */}
       <div className="text-center mt-8 text-gray-500 italic text-sm opacity-50 font-serif">
         {stressLevel > 0.5 ? "\"Focus. Do not disappoint me.\"" : "Time is ticking..."}
       </div>
@@ -370,11 +357,9 @@ const ResultDossier: React.FC<{ records: PlayerRecord[]; onRestart: () => void }
   const correctCount = records.filter(r => r.isCorrect).length;
   
   return (
-    // Fixed wrapper to allow scrolling independent of body overflow-hidden
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4 flex items-start justify-center">
       <div className="relative my-4 md:my-10 bg-[#f4f1ea] text-gray-900 max-w-3xl w-full p-4 md:p-8 shadow-[0_0_50px_rgba(255,255,255,0.1)] font-dossier rotate-0 md:rotate-1">
         
-        {/* Stamp - Moved down to body to avoid obscuring header info/score */}
         <div className="absolute top-24 right-2 md:top-32 md:right-10 border-4 md:border-8 border-red-900 text-red-900 font-bold text-3xl md:text-5xl px-4 py-1 md:px-6 md:py-2 opacity-75 -rotate-12 mix-blend-multiply pointer-events-none z-20">
           TERMINATED
         </div>
@@ -450,7 +435,6 @@ const ResultDossier: React.FC<{ records: PlayerRecord[]; onRestart: () => void }
           </button>
         </div>
         
-        {/* Paper texture overlay effect */}
         <div className="absolute inset-0 bg-yellow-500/5 pointer-events-none mix-blend-multiply" />
       </div>
     </div>
@@ -463,31 +447,28 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>(GameState.INTRO);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.A1);
   const [sessionRecords, setSessionRecords] = useState<PlayerRecord[]>([]);
-  // State for Custom Words (1st Grade mode)
   const [customWordList, setCustomWordList] = useState<WordChallenge[] | undefined>(undefined);
 
   const handleIntroComplete = () => setGameState(GameState.MENU);
   
   const handleDifficultySelect = (d: Difficulty) => {
     setDifficulty(d);
-    setCustomWordList(undefined); // Reset custom words
+    setCustomWordList(undefined);
     setGameState(GameState.PLAYING);
   };
 
   const handleCustomSelect = (words: WordChallenge[]) => {
     setCustomWordList(words);
-    setDifficulty(Difficulty.A1); // Default difficulty for custom mode (controls timer)
+    setDifficulty(Difficulty.A1);
     setGameState(GameState.PLAYING);
   };
 
   const handleGameOver = (records: PlayerRecord[]) => {
     setSessionRecords(records);
-    // Flash red effect before showing results
     const flash = document.createElement('div');
     flash.className = 'fixed inset-0 bg-red-600 z-[100] pointer-events-none mix-blend-overlay';
     document.body.appendChild(flash);
     
-    // Simple animation sequence for game over
     flash.animate([
       { opacity: 0 },
       { opacity: 1 },
@@ -510,9 +491,10 @@ export default function App() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Play sound for buttons or links, or elements inside them
       if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'A' || target.closest('a')) {
         playClickSound();
+        // Ensure music starts if allowed
+        initMusic();
       }
     };
     
@@ -532,6 +514,7 @@ export default function App() {
           <Atmosphere intensity={0.2} />
           <DifficultyMenu onSelect={handleDifficultySelect} onSelectCustom={handleCustomSelect} />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
 
@@ -543,6 +526,7 @@ export default function App() {
             onGameOver={handleGameOver} 
           />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
 
@@ -550,6 +534,7 @@ export default function App() {
         <>
           <ResultDossier records={sessionRecords} onRestart={handleRestart} />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
     </div>

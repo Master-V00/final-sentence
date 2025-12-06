@@ -5,8 +5,9 @@ import { fetchWordBatch } from './services/geminiService';
 import { Atmosphere } from './components/Atmosphere';
 import { unitsData } from './data/units';
 import { firstTermData } from './data/firstTerm';
-import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound } from './services/soundService';
+import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound, initMusic } from './services/soundService';
 import { ContactFab } from './components/ContactFab';
+import { MusicToggle } from './components/MusicToggle';
 
 // --- Sub-Components --- //
 
@@ -23,6 +24,9 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
   ];
 
   useEffect(() => {
+    // Attempt to start music during intro
+    initMusic();
+
     // Fade in from black
     const t1 = setTimeout(() => setOpacity(1), 1000);
     
@@ -513,6 +517,8 @@ export default function App() {
       // Play sound for buttons or links, or elements inside them
       if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'A' || target.closest('a')) {
         playClickSound();
+        // Also ensure music is running on first interaction
+        initMusic();
       }
     };
     
@@ -532,6 +538,7 @@ export default function App() {
           <Atmosphere intensity={0.2} />
           <DifficultyMenu onSelect={handleDifficultySelect} onSelectCustom={handleCustomSelect} />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
 
@@ -543,6 +550,7 @@ export default function App() {
             onGameOver={handleGameOver} 
           />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
 
@@ -550,6 +558,7 @@ export default function App() {
         <>
           <ResultDossier records={sessionRecords} onRestart={handleRestart} />
           <ContactFab />
+          <MusicToggle />
         </>
       )}
     </div>

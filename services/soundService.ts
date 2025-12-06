@@ -1,7 +1,9 @@
 
-// Simple synthesized sound effects using Web Audio API
+// Simple sound effects and background music using Audio API
 
 let audioCtx: AudioContext | null = null;
+let bgMusic: HTMLAudioElement | null = null;
+let isMusicMuted = false;
 
 const getContext = () => {
   if (!audioCtx) {
@@ -10,11 +12,68 @@ const getContext = () => {
   return audioCtx;
 };
 
+// --- Background Music Control ---
+
+export const initMusic = () => {
+  if (bgMusic) return; // Already initialized
+
+  bgMusic = new Audio('/Dark-Pulse-Monitor.mp3');
+  bgMusic.loop = true;
+  bgMusic.volume = 0.5; // Default volume
+
+  if (!isMusicMuted) {
+    bgMusic.play().catch(e => {
+      console.log("Auto-play prevented, waiting for interaction:", e);
+    });
+  }
+};
+
+export const toggleMusic = (mute: boolean) => {
+  isMusicMuted = mute;
+  
+  if (!bgMusic) {
+    initMusic();
+    return;
+  }
+  
+  if (mute) {
+    bgMusic.pause();
+  } else {
+    bgMusic.play().catch(e => console.error(e));
+  }
+};
+
+export const duckMusic = () => {
+  if (!bgMusic || isMusicMuted) return;
+  
+  // Lower volume temporarily
+  bgMusic.volume = 0.1;
+  
+  // Restore after short delay
+  setTimeout(() => {
+    if (bgMusic && !isMusicMuted) {
+      // Smooth-ish restoration
+      const restoreInterval = setInterval(() => {
+        if (bgMusic!.volume < 0.5) {
+          bgMusic!.volume = Math.min(0.5, bgMusic!.volume + 0.05);
+        } else {
+          clearInterval(restoreInterval);
+        }
+      }, 50);
+    }
+  }, 800);
+};
+
+
+// --- SFX ---
+
 export const playCorrectSound = () => {
   const ctx = getContext();
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   
+  duckMusic();
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   
@@ -37,6 +96,8 @@ export const playIncorrectSound = () => {
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   
+  duckMusic();
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   
@@ -59,6 +120,8 @@ export const playTickSound = () => {
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   
+  duckMusic();
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   
@@ -80,6 +143,8 @@ export const playClickSound = () => {
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   
+  duckMusic();
+
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   
