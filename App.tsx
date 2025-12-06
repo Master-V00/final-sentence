@@ -1,7 +1,12 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameState, Difficulty, PlayerRecord, WordChallenge } from './types';
 import { fetchWordBatch } from './services/geminiService';
 import { Atmosphere } from './components/Atmosphere';
+import { unitsData } from './data/units';
+import { firstTermData } from './data/firstTerm';
+import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound } from './services/soundService';
+import { ContactFab } from './components/ContactFab';
 
 // --- Sub-Components --- //
 
@@ -55,38 +60,139 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
 };
 
 // 2. Difficulty Menu
-const DifficultyMenu: React.FC<{ onSelect: (d: Difficulty) => void }> = ({ onSelect }) => {
+const DifficultyMenu: React.FC<{ 
+  onSelect: (d: Difficulty) => void;
+  onSelectCustom: (words: WordChallenge[]) => void;
+}> = ({ onSelect, onSelectCustom }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleCustomSelection = (key: string) => {
+    setShowModal(false);
+    let words: WordChallenge[] = [];
+    if (key === 'first_term') {
+      words = firstTermData;
+    } else if (unitsData[key]) {
+      words = unitsData[key];
+    }
+    
+    if (words.length > 0) {
+      // Shuffle the custom words for randomness
+      const shuffled = [...words].sort(() => Math.random() - 0.5);
+      onSelectCustom(shuffled);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen relative z-10">
-      <div className="border-2 border-green-500/30 bg-green-900/10 p-8 rounded-lg backdrop-blur-sm shadow-[0_0_50px_rgba(0,255,0,0.1)] max-w-lg w-full">
-        <h2 className="text-green-400 text-2xl mb-6 border-b border-green-500/30 pb-2 font-mono tracking-tighter">
-          SELECT_INTENSITY_LEVEL
-        </h2>
-        <div className="grid grid-cols-1 gap-4">
-          {Object.values(Difficulty).map((lvl) => (
-            <button
-              key={lvl}
-              onClick={() => onSelect(lvl)}
-              className="group relative flex items-center justify-between p-4 border border-green-500/20 hover:bg-green-500/20 hover:border-green-400 transition-all text-left"
-            >
-              <span className="text-xl font-bold text-green-100 group-hover:text-white">{lvl}</span>
-              <span className="text-xs text-green-400/60 group-hover:text-green-300 uppercase tracking-widest">
-                 {lvl === 'A1' ? 'Basic Intelligence' : lvl === 'C2' ? 'Classified Data' : 'Standard Protocol'}
-              </span>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-green-400/5 mix-blend-overlay pointer-events-none" />
-            </button>
-          ))}
+    <>
+      <div className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto">
+        <div className="flex flex-col items-center justify-center w-full min-h-screen py-10">
+          <div className="border-2 border-green-500/30 bg-green-900/10 p-8 rounded-lg backdrop-blur-sm shadow-[0_0_50px_rgba(0,255,0,0.1)] max-w-lg w-full">
+            <h2 className="text-green-400 text-2xl mb-6 border-b border-green-500/30 pb-2 font-mono tracking-tighter">
+              SELECT_INTENSITY_LEVEL
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
+              {(Object.values(Difficulty) as Difficulty[]).map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => onSelect(lvl)}
+                  className="group relative flex items-center justify-between p-4 border border-green-500/20 hover:bg-green-500/20 hover:border-green-400 transition-all text-left"
+                >
+                  <span className="text-xl font-bold text-green-100 group-hover:text-white">{lvl}</span>
+                  <span className="text-xs text-green-400/60 group-hover:text-green-300 uppercase tracking-widest">
+                     {lvl === 'A1' ? 'Basic Intelligence' : lvl === 'C2' ? 'Classified Data' : 'Standard Protocol'}
+                  </span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-green-400/5 mix-blend-overlay pointer-events-none" />
+                </button>
+              ))}
+
+              {/* Expand Arrow - UPDATED */}
+              <button 
+                onClick={() => setExpanded(!expanded)}
+                className="flex flex-col items-center justify-center py-4 mt-2 text-green-400 hover:text-green-300 transition-colors opacity-80 hover:opacity-100"
+              >
+                <span className="text-xs uppercase tracking-widest mb-1">Access Special Archives</span>
+                <svg 
+                  className={`w-6 h-6 transform transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Expanded Options */}
+              {expanded && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="group relative flex items-center justify-between p-4 border border-yellow-500/20 hover:bg-yellow-500/20 hover:border-yellow-400 transition-all text-left animate-in fade-in slide-in-from-top-2"
+                >
+                  <span className="text-xl font-bold text-yellow-100 group-hover:text-white">1st</span>
+                  <span className="text-xs text-yellow-400/60 group-hover:text-yellow-300 uppercase tracking-widest">
+                    Special Curriculum
+                  </span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-yellow-400/5 mix-blend-overlay pointer-events-none" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal for 1st Grade Selection */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-gray-900 border-2 border-green-500 p-6 md:p-8 rounded-lg max-w-md w-full shadow-[0_0_30px_rgba(0,255,0,0.2)]">
+            <h3 className="text-xl md:text-2xl text-green-400 font-bold mb-6 text-center border-b border-green-500/30 pb-4">
+              SELECT MODULE
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              <button 
+                onClick={() => handleCustomSelection('unit1')}
+                className="p-3 border border-green-500/40 text-green-100 hover:bg-green-500/20 hover:border-green-400 transition-all text-center uppercase tracking-widest font-bold"
+              >
+                Unit 1
+              </button>
+              <button 
+                onClick={() => handleCustomSelection('unit2')}
+                className="p-3 border border-green-500/40 text-green-100 hover:bg-green-500/20 hover:border-green-400 transition-all text-center uppercase tracking-widest font-bold"
+              >
+                Unit 2
+              </button>
+              <button 
+                onClick={() => handleCustomSelection('unit3')}
+                className="p-3 border border-green-500/40 text-green-100 hover:bg-green-500/20 hover:border-green-400 transition-all text-center uppercase tracking-widest font-bold"
+              >
+                Unit 3
+              </button>
+              <button 
+                onClick={() => handleCustomSelection('first_term')}
+                className="p-3 border border-yellow-500/40 text-yellow-100 hover:bg-yellow-500/20 hover:border-yellow-400 transition-all text-center uppercase tracking-widest font-bold mt-2"
+              >
+                First Term
+              </button>
+              
+              <button 
+                onClick={() => setShowModal(false)}
+                className="mt-4 text-xs text-gray-500 hover:text-gray-300 text-center uppercase"
+              >
+                [ Cancel Operation ]
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
 // 3. Gameplay Session
 const GameSession: React.FC<{ 
   difficulty: Difficulty; 
+  customWords?: WordChallenge[];
   onGameOver: (records: PlayerRecord[]) => void 
-}> = ({ difficulty, onGameOver }) => {
+}> = ({ difficulty, customWords, onGameOver }) => {
   const [words, setWords] = useState<WordChallenge[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -103,16 +209,22 @@ const GameSession: React.FC<{
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      // Fetch initial batch
-      const newWords = await fetchWordBatch(difficulty, 5);
-      if (mounted) {
-        setWords(newWords);
+      // If we have custom words (1st Grade mode), use them directly
+      if (customWords && customWords.length > 0) {
+        setWords(customWords);
         setLoading(false);
+      } else {
+        // Otherwise fetch from Gemini
+        const newWords = await fetchWordBatch(difficulty, 5);
+        if (mounted) {
+          setWords(newWords);
+          setLoading(false);
+        }
       }
     };
     load();
     return () => { mounted = false; };
-  }, [difficulty]);
+  }, [difficulty, customWords]);
 
   // Timer Logic
   useEffect(() => {
@@ -122,11 +234,22 @@ const GameSession: React.FC<{
     
     timerRef.current = window.setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 0) {
+        const newValue = prev - step;
+        
+        // Timer ticking sound effect logic
+        const prevSec = Math.ceil((prev / 100) * maxTimeSec);
+        const newSec = Math.ceil((newValue / 100) * maxTimeSec);
+        
+        // Play tick when crossing integer second boundaries in the last 3 seconds
+        if (newSec < prevSec && newSec <= 3 && newSec > 0) {
+          playTickSound();
+        }
+
+        if (newValue <= 0) {
           handleSubmit(true); // Force submit on timeout
           return 0;
         }
-        return prev - step;
+        return newValue;
       });
     }, 100);
 
@@ -135,7 +258,6 @@ const GameSession: React.FC<{
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, currentIndex, maxTimeSec]); 
-  // dependency on handleSubmit omitted to avoid loop, handleSubmit is stable via closure or ref logic usually but here we just call it.
 
   const handleSubmit = useCallback(async (timeout = false) => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -143,6 +265,13 @@ const GameSession: React.FC<{
     const currentWord = words[currentIndex];
     const isCorrect = !timeout && input.trim().toLowerCase() === currentWord.english.toLowerCase();
     
+    // Play Sound
+    if (isCorrect) {
+      playCorrectSound();
+    } else {
+      playIncorrectSound();
+    }
+
     // Record stats
     const newRecord: PlayerRecord = {
       challenge: currentWord,
@@ -165,17 +294,27 @@ const GameSession: React.FC<{
       setInput('');
       setTimeLeft(100);
       
+      // Check if we need more words or loop
       if (currentIndex + 1 >= words.length) {
         setLoading(true);
-        const moreWords = await fetchWordBatch(difficulty, 5);
-        setWords(prev => [...prev, ...moreWords]);
-        setLoading(false);
-        setCurrentIndex(prev => prev + 1);
+        if (customWords) {
+          // If custom words, just Reshuffle and Loop to keep game going (Survival style)
+          const reshuffled = [...words].sort(() => Math.random() - 0.5);
+          setWords(prev => [...prev, ...reshuffled]);
+          setLoading(false);
+          setCurrentIndex(prev => prev + 1);
+        } else {
+          // If API, fetch more
+          const moreWords = await fetchWordBatch(difficulty, 5);
+          setWords(prev => [...prev, ...moreWords]);
+          setLoading(false);
+          setCurrentIndex(prev => prev + 1);
+        }
       } else {
         setCurrentIndex(prev => prev + 1);
       }
     }
-  }, [input, words, currentIndex, records, timeLeft, maxTimeSec, difficulty, onGameOver]);
+  }, [input, words, currentIndex, records, timeLeft, maxTimeSec, difficulty, onGameOver, customWords]);
 
   if (loading && words.length === 0) {
     return <div className="text-center mt-40 text-green-500 animate-pulse">DECRYPTING DATA STREAMS...</div>;
@@ -324,11 +463,20 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>(GameState.INTRO);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.A1);
   const [sessionRecords, setSessionRecords] = useState<PlayerRecord[]>([]);
+  // State for Custom Words (1st Grade mode)
+  const [customWordList, setCustomWordList] = useState<WordChallenge[] | undefined>(undefined);
 
   const handleIntroComplete = () => setGameState(GameState.MENU);
   
   const handleDifficultySelect = (d: Difficulty) => {
     setDifficulty(d);
+    setCustomWordList(undefined); // Reset custom words
+    setGameState(GameState.PLAYING);
+  };
+
+  const handleCustomSelect = (words: WordChallenge[]) => {
+    setCustomWordList(words);
+    setDifficulty(Difficulty.A1); // Default difficulty for custom mode (controls timer)
     setGameState(GameState.PLAYING);
   };
 
@@ -355,7 +503,22 @@ export default function App() {
   const handleRestart = () => {
     setGameState(GameState.MENU);
     setSessionRecords([]);
+    setCustomWordList(undefined);
   };
+
+  // Global Click Sound
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Play sound for buttons or links, or elements inside them
+      if (target.tagName === 'BUTTON' || target.closest('button') || target.tagName === 'A' || target.closest('a')) {
+        playClickSound();
+      }
+    };
+    
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-gray-100 font-mono overflow-hidden selection:bg-red-900 selection:text-white">
@@ -367,16 +530,27 @@ export default function App() {
       {gameState === GameState.MENU && (
         <>
           <Atmosphere intensity={0.2} />
-          <DifficultyMenu onSelect={handleDifficultySelect} />
+          <DifficultyMenu onSelect={handleDifficultySelect} onSelectCustom={handleCustomSelect} />
+          <ContactFab />
         </>
       )}
 
       {gameState === GameState.PLAYING && (
-        <GameSession difficulty={difficulty} onGameOver={handleGameOver} />
+        <>
+          <GameSession 
+            difficulty={difficulty} 
+            customWords={customWordList} 
+            onGameOver={handleGameOver} 
+          />
+          <ContactFab />
+        </>
       )}
 
       {gameState === GameState.RESULTS && (
-        <ResultDossier records={sessionRecords} onRestart={handleRestart} />
+        <>
+          <ResultDossier records={sessionRecords} onRestart={handleRestart} />
+          <ContactFab />
+        </>
       )}
     </div>
   );
