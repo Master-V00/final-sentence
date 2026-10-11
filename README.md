@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Play_Now-success?logo=githubpages&logoColor=white)](https://masterv00-hub.github.io/final-sentence/)
 
-### ▶️ [العب الآن مباشرة — Play Live](https://masterv00-hub.github.io/final-sentence/)
+### ▶️ [العب الآن مباشرة — Play Live](https://Master-V00.github.io/final-sentence/)
 
 **اكتب الترجمة الصحيحة قبل انتهاء الوقت… أو الجملة الأخيرة ستكون الأخيرة فعلاً.**
 
