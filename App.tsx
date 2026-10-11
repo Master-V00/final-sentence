@@ -52,16 +52,25 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
   }, [onComplete, lines.length]);
 
   return (
-    <div className="flex items-center justify-center h-screen text-center transition-opacity duration-[2000ms]" style={{ opacity }}>
-      <div className="space-y-6">
-        <div className="text-4xl md:text-6xl text-gray-200 font-bold tracking-widest animate-pulse">
-          {lines[textIndex]}
-        </div>
-        <div className="text-sm text-gray-600 uppercase tracking-[0.5em]">
-          System: Interrogation Protocol
+    <>
+      <div className="flex items-center justify-center h-screen text-center transition-opacity duration-[2000ms]" style={{ opacity }}>
+        <div className="space-y-6">
+          <div className="text-4xl md:text-6xl text-gray-200 font-bold tracking-widest animate-pulse">
+            {lines[textIndex]}
+          </div>
+          <div className="text-sm text-gray-600 uppercase tracking-[0.5em]">
+            System: Interrogation Protocol
+          </div>
         </div>
       </div>
-    </div>
+      <button
+        onClick={onComplete}
+        aria-label="Skip intro"
+        className="fixed bottom-6 right-6 z-50 text-[11px] uppercase tracking-[0.3em] text-gray-600 hover:text-gray-300 transition-colors"
+      >
+        [ skip intro → ]
+      </button>
+    </>
   );
 };
 
