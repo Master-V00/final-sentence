@@ -56,7 +56,6 @@
 
 - 🚪 شاشة دخول (`click to enter...`) — المتصفح يشترط تفاعل المستخدم قبل تشغيل الصوت، فالضغطة الأولى تفتح الموسيقى لبقية الجلسة
 - ⏭️ زر تخطي صغير (`[ skip → ]`) أسفل بطاقة اللعب لتجاوز الكلمة الحالية بدون تسجيلها (لا عقوبة ولا مكافأة)
-- ⏩ زر (`[ skip intro → ]`) لتجاوز مشهد الافتتاحية والانتقال مباشرة لاختيار الصعوبة
 
 - 🤖 توليد كلمات ديناميكي عبر **Gemini 2.5 Flash** مع كلمات احتياطية عند انقطاع الخدمة
 - 📚 أرشيف مناهج (`data/units.ts` + `data/firstTerm.ts`)
@@ -146,7 +145,6 @@ Covers **CEFR levels A1–C2** plus the Egyptian 1st-grade curriculum.
 
 - 🚪 Entry gate (`click to enter...`) — browsers require a user gesture before audio can start, so the first click unlocks the music for the whole session
 - ⏭️ Small skip button (`[ skip → ]`) at the bottom of the play card to skip the current word without recording it (no penalty, no reward)
-- ⏩ A (`[ skip intro → ]`) button to skip the intro sequence and jump straight to difficulty select
 
 - 🤖 Dynamic word generation via **Gemini 2.5 Flash** with offline fallback words
 - 📚 Curriculum archives (`data/units.ts` + `data/firstTerm.ts`)

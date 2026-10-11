@@ -66,7 +66,7 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
       <button
         onClick={onComplete}
         aria-label="Skip intro"
-        className="fixed bottom-6 right-6 z-50 text-[11px] uppercase tracking-[0.3em] text-gray-600 hover:text-gray-300 transition-colors"
+        className="fixed bottom-6 right-6 z-50 text-xs uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-colors bg-black/60 px-3 py-2 border border-gray-800 hover:border-gray-500"
       >
         [ skip intro → ]
       </button>
@@ -362,7 +362,7 @@ const GameSession: React.FC<{
         <button
           onClick={handleSkip}
           aria-label="Skip this word"
-          className="absolute bottom-3 right-4 text-[11px] uppercase tracking-[0.3em] text-gray-600 hover:text-gray-300 transition-colors"
+          className="absolute bottom-3 right-4 text-xs uppercase tracking-[0.3em] text-gray-400 hover:text-white transition-colors bg-black/60 px-2 py-1"
         >
           [ skip → ]
         </button>
