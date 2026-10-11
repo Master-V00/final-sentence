@@ -17,7 +17,7 @@ const getContext = () => {
 export const initMusic = () => {
   if (bgMusic) return; // Already initialized
 
-  bgMusic = new Audio('/Dark-Pulse-Monitor.mp3');
+  bgMusic = new Audio(import.meta.env.BASE_URL + 'Dark-Pulse-Monitor.mp3');
   bgMusic.loop = true;
   bgMusic.volume = 0.5; // Default volume
 
