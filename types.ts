@@ -9,6 +9,7 @@ export enum Difficulty {
 }
 
 export enum GameState {
+  ENTER = 'ENTER',
   INTRO = 'INTRO',
   MENU = 'MENU',
   LOADING = 'LOADING',

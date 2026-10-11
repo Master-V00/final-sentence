@@ -8,6 +8,7 @@ import { firstTermData } from './data/firstTerm';
 import { playCorrectSound, playIncorrectSound, playTickSound, playClickSound, initMusic } from './services/soundService';
 import { ContactFab } from './components/ContactFab';
 import { MusicToggle } from './components/MusicToggle';
+import { EnterGate } from './components/EnterGate';
 
 // --- Sub-Components --- //
 
@@ -24,7 +25,8 @@ const IntroSequence: React.FC<{ onComplete: () => void }> = ({ onComplete }) => 
   ];
 
   useEffect(() => {
-    // Attempt to start music immediately
+    // Fallback: music normally starts at the entry gate (user gesture).
+    // This covers any path that reaches the intro without passing the gate.
     initMusic();
 
     // Fade in from black
@@ -259,6 +261,35 @@ const GameSession: React.FC<{
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, currentIndex, maxTimeSec]); 
 
+  const advanceToNextWord = useCallback(async () => {
+    setInput('');
+    setTimeLeft(100);
+
+    if (currentIndex + 1 >= words.length) {
+      setLoading(true);
+      if (customWords) {
+        const reshuffled = [...words].sort(() => Math.random() - 0.5);
+        setWords(prev => [...prev, ...reshuffled]);
+        setLoading(false);
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        const moreWords = await fetchWordBatch(difficulty, 5);
+        setWords(prev => [...prev, ...moreWords]);
+        setLoading(false);
+        setCurrentIndex(prev => prev + 1);
+      }
+    } else {
+      setCurrentIndex(prev => prev + 1);
+    }
+  }, [words, currentIndex, difficulty, customWords]);
+
+  const handleSkip = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    playClickSound();
+    // Skip the current word without recording it: no penalty, no reward.
+    advanceToNextWord();
+  }, [advanceToNextWord]);
+
   const handleSubmit = useCallback(async (timeout = false) => {
     if (timerRef.current) clearInterval(timerRef.current);
     
@@ -285,27 +316,9 @@ const GameSession: React.FC<{
       onGameOver(updatedRecords);
     } else {
       setStressLevel(prev => Math.min(prev + 0.1, 1));
-      setInput('');
-      setTimeLeft(100);
-      
-      if (currentIndex + 1 >= words.length) {
-        setLoading(true);
-        if (customWords) {
-          const reshuffled = [...words].sort(() => Math.random() - 0.5);
-          setWords(prev => [...prev, ...reshuffled]);
-          setLoading(false);
-          setCurrentIndex(prev => prev + 1);
-        } else {
-          const moreWords = await fetchWordBatch(difficulty, 5);
-          setWords(prev => [...prev, ...moreWords]);
-          setLoading(false);
-          setCurrentIndex(prev => prev + 1);
-        }
-      } else {
-        setCurrentIndex(prev => prev + 1);
-      }
+      advanceToNextWord();
     }
-  }, [input, words, currentIndex, records, timeLeft, maxTimeSec, difficulty, onGameOver, customWords]);
+  }, [input, words, currentIndex, records, timeLeft, maxTimeSec, difficulty, onGameOver, customWords, advanceToNextWord]);
 
   if (loading && words.length === 0) {
     return <div className="text-center mt-40 text-green-500 animate-pulse">DECRYPTING DATA STREAMS...</div>;
@@ -336,6 +349,14 @@ const GameSession: React.FC<{
           placeholder="TRANSLATE"
           autoComplete="off"
         />
+
+        <button
+          onClick={handleSkip}
+          aria-label="Skip this word"
+          className="absolute bottom-3 right-4 text-[11px] uppercase tracking-[0.3em] text-gray-600 hover:text-gray-300 transition-colors"
+        >
+          [ skip → ]
+        </button>
       </div>
 
       <div className="mt-8 h-2 bg-gray-800 rounded-full overflow-hidden relative">
@@ -444,10 +465,17 @@ const ResultDossier: React.FC<{ records: PlayerRecord[]; onRestart: () => void }
 // --- Main App Component --- //
 
 export default function App() {
-  const [gameState, setGameState] = useState<GameState>(GameState.INTRO);
+  const [gameState, setGameState] = useState<GameState>(GameState.ENTER);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.A1);
   const [sessionRecords, setSessionRecords] = useState<PlayerRecord[]>([]);
   const [customWordList, setCustomWordList] = useState<WordChallenge[] | undefined>(undefined);
+
+  // Entry gate click is a real user gesture, so starting the music here
+  // is allowed by browser autoplay policies.
+  const handleEnter = () => {
+    initMusic();
+    setGameState(GameState.INTRO);
+  };
 
   const handleIntroComplete = () => setGameState(GameState.MENU);
   
@@ -507,6 +535,8 @@ export default function App() {
       {/* Background ambient light spots */}
       <div className="fixed top-[-10%] left-[20%] w-[400px] h-[400px] bg-yellow-900/10 rounded-full blur-[120px] pointer-events-none light-flicker" />
       
+      {gameState === GameState.ENTER && <EnterGate onEnter={handleEnter} />}
+
       {gameState === GameState.INTRO && <IntroSequence onComplete={handleIntroComplete} />}
       
       {gameState === GameState.MENU && (

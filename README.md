@@ -54,6 +54,9 @@
 
 ### ✨ المميزات
 
+- 🚪 شاشة دخول (`click to enter...`) — المتصفح يشترط تفاعل المستخدم قبل تشغيل الصوت، فالضغطة الأولى تفتح الموسيقى لبقية الجلسة
+- ⏭️ زر تخطي صغير (`[ skip → ]`) أسفل بطاقة اللعب لتجاوز الكلمة الحالية بدون تسجيلها (لا عقوبة ولا مكافأة)
+
 - 🤖 توليد كلمات ديناميكي عبر **Gemini 2.5 Flash** مع كلمات احتياطية عند انقطاع الخدمة
 - 📚 أرشيف مناهج (`data/units.ts` + `data/firstTerm.ts`)
 - 🔊 مؤثرات صوتية مولّدة بتقنية Web Audio + موسيقى خلفية (`Dark-Pulse-Monitor.mp3`)
@@ -111,6 +114,7 @@ final-sentence/
 | `v01` | 2025-12-04 | إعادة كتابة كاملة بـ React + Vite + Gemini |
 | `v02` | 2025-12-06 | أرشيف المناهج + ContactFab + مؤثرات صوتية |
 | `v03` | 2025-12-06 | MusicToggle + موسيقى الخلفية MP3 |
+| `v04` | 2026-10-11 | بوابة الدخول + زر التخطي + ضغط الموسيقى (5.4MB ← 1.3MB) |
 
 كل إصدار محفوظ كـ commit بتاريخه الأصلي — استخدم `git log` لاستعراض الرحلة.
 
@@ -140,6 +144,9 @@ Covers **CEFR levels A1–C2** plus the Egyptian 1st-grade curriculum.
 | `ResultDossier` | Final result as an interrogation report |
 
 ### ✨ Features
+
+- 🚪 Entry gate (`click to enter...`) — browsers require a user gesture before audio can start, so the first click unlocks the music for the whole session
+- ⏭️ Small skip button (`[ skip → ]`) at the bottom of the play card to skip the current word without recording it (no penalty, no reward)
 
 - 🤖 Dynamic word generation via **Gemini 2.5 Flash** with offline fallback words
 - 📚 Curriculum archives (`data/units.ts` + `data/firstTerm.ts`)
@@ -198,6 +205,7 @@ final-sentence/
 | `v01` | 2025-12-04 | Full rewrite to React + Vite + Gemini |
 | `v02` | 2025-12-06 | Curriculum archives + ContactFab + SFX |
 | `v03` | 2025-12-06 | MusicToggle + MP3 background music |
+| `v04` | 2026-10-11 | Entry gate + skip button + compressed music (5.4MB → 1.3MB) |
 
 Each version is preserved as a commit with its original date — run `git log` to walk the journey.
 
