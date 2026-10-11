@@ -9,6 +9,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Play_Now-success?logo=githubpages&logoColor=white)](https://masterv00-hub.github.io/final-sentence/)
+
+### ▶️ [العب الآن مباشرة — Play Live](https://masterv00-hub.github.io/final-sentence/)
 
 **اكتب الترجمة الصحيحة قبل انتهاء الوقت… أو الجملة الأخيرة ستكون الأخيرة فعلاً.**
 
