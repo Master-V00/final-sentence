@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.jpg" alt="FINAL SENTENCE logo" width="200" />
+
 # ⚡ FINAL SENTENCE
 
 ### 🎮 لعبة رعب نفسي لتعلّم الإنجليزية — Psychological Horror Typing Game
